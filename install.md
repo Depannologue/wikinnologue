@@ -208,7 +208,7 @@ end
 ```
 then
 ```
-  sudo vi /etc/init.d/unicor_depannologue
+  sudo vi /etc/init.d/unicorn_depannologue
 ```
 paste the code bellow and change USER_NAME by your username
 ```
@@ -282,7 +282,7 @@ rotate)
 esac
 ```
 ```
-nano update-rc.d unicor_depannologue defaults
+update-rc.d unicorn_depannologue defaults
 ```
 add the following code to your /etc/hosts file
 ```
