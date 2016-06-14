@@ -140,11 +140,37 @@ make sure that your role name is the same as your username
   create database depannologue_dev;  
 ```
 ```
+  CREATE ROLE admin WITH LOGIN CREATEDB CREATEROLE;
+```
+```
   \q
 ```
+set admin as a default username of the database
+```
+  vi ~/dev/depannologue/config/database.yml
+```
+change the existing code to look like follow
+```
+development:
+adapter: postgresql
+encoding: unicode
+database: depannologue_dev
+username: admin
+pool: 5
+
+production:
+adapter: postgresql
+encoding: unicode
+database: depannologue_production
+username: <%= Rails.application.secrets[:database_username] %>
+password: <%= Rails.application.secrets[:database_password] %>
+pool: 5
+```
+
 ```
   bundle exec rake db:schema:load
 ```
+
 ###  unicorn config
 ```
   vi ~/dev/depannologue/config/unicorn/development.rb
