@@ -1,5 +1,5 @@
-# Installer le projet
-## Installation des outils
+# Install the project
+
 ### install aptitude
 ```shell
    sudo apt-get install aptitude
@@ -15,7 +15,7 @@
 For RVM to work properly, you have to check the 'Run command as login shell' checkbox on the Title and Command tab of gnome-terminal's
 Edit ▸ Profile Preferences menu dialog.
 ```shell
-  rvm install ruby_2.2.0
+  rvm install ruby-2.2.0
 ```
 ```shell
   rvm --default use 2.2.0
@@ -30,9 +30,6 @@ Edit ▸ Profile Preferences menu dialog.
 ### install bundler
 ```shell
   gem install bundler
-```
-```shell
-  bundle install
 ```
 ### install nodejs
 ```shell
@@ -77,6 +74,12 @@ clone the project
 ```
 ```shell
   mv mainsite depannologue
+```
+```shell
+  cd ~/dev/depannologue
+```
+```shell
+  bundle install
 ```
 ### install and setup nginx
 ```shell
@@ -132,15 +135,8 @@ server {
 ```
   sudo -u postgres psql
 ```
-make sure that your role name is the same as your username
 ```
-  create role USER_NAME with login;
-```
-```
-  create database depannologue_dev;  
-```
-```
-  CREATE ROLE admin WITH LOGIN CREATEDB CREATEROLE;
+  create user admin with superuser;
 ```
 ```
   \q
@@ -152,6 +148,7 @@ set admin as a default username of the database
 change the existing code to look like follow
 ```
 development:
+host: localhost
 adapter: postgresql
 encoding: unicode
 database: depannologue_dev
@@ -166,11 +163,38 @@ username: <%= Rails.application.secrets[:database_username] %>
 password: <%= Rails.application.secrets[:database_password] %>
 pool: 5
 ```
+you have to change  the postgres config file to use rails command,
+```
+sudo vi /etc/postgresql/9.5/main/pg_hba.conf
 
+```
+change the existing code to look like the following code
+
+```
+local   all             postgres                              md5
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# "local" is for Unix domain socket connections only
+local   all             all                                     trust
+# IPv4 local connections:
+host    all             all             localhost               trust
+# IPv6 local connections:
+host    all             all             ::1/128                 md5
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+#local   replication     postgres                                peer
+#host    replication     postgres        127.0.0.1/32            md5
+#host    replication     postgres        ::1/128                 md5
+
+```
+now we can create the database using rails commands
+```
+  bundle exec rake db:create
+```
 ```
   bundle exec rake db:schema:load
 ```
-
 ###  unicorn config
 ```
   vi ~/dev/depannologue/config/unicorn/development.rb
@@ -302,4 +326,41 @@ sudo vi /etc/hosts
 ```
 127.0.1.1       depanologue
 127.0.0.1       www.depannologue.dev admin.depannologue.dev pro.depannologue.dev
+```
+create tmp folder
+```
+cd ~/dev/depannologue
+```
+```
+mkdir -p tmp/{cache,data/meta_request,pids,sessions,sockets}
+```
+create secret.yml
+```
+sudo vi ~/dev/depannologue/config/secret.yml
+```
+paste the following code
+```
+# Be sure to restart your server when you modify this file.
+
+# Your secret key is used for verifying the integrity of signed cookies.
+# If you change this key, all old signed cookies will become invalid!
+
+# Make sure the secret is at least 30 characters and all random,
+# no regular words or you'll be exposed to dictionary attacks.
+# You can use `rake secret` to generate a secure secret key.
+
+# Make sure the secrets in this file are kept private
+# if you're sharing your code publicly.
+
+development:
+  secret_key_base:    3be4eb24787cc652b8991aad318291e4474cf707a22fb47ad92dfa05e65722a1aef7212abcc60f11fd2679017689c549622b90111729d36ce7dde1e108856678
+  twilio_account_sid: AC57e156e38e25920c20599ae15549ff0f
+  twilio_auth_token:  f40f003064270f145fdffdf91bce2102
+  twilio_from:        33644605079
+  default_from:       noreply@depannologue.com
+  host:               http://localhost:3000
+  lockup_actived:     false
+  lockup_codeword:    love
+  mailgun_api_key:    key-90f2790da18c8f7a93bbf7999ec6c77f
+  mailgun_domain:     sandbox2ceff1ee93d84edf9664f89fc67944b4.mailgun.org
 ```
