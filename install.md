@@ -482,3 +482,117 @@ exit $RETVAL
 ```
 sudo aptitude install redis-server
 ```
+### clockwork config
+```
+  sudo vi /etc/init.d init_clockwork
+```
+```
+  sudo vi /etc/init.d init_clockwork
+```
+```
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          clockwork
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the clockwork service
+# Description:       starts clockwork service
+### END INIT INFO
+APP="depannologue"
+AS_USER="depanologue"
+APP_DIR="/home/depanologue/dev/${APP}"
+
+APP_CONFIG="${APP_DIR}/config"
+LOG_FILE="$APP_DIR/log/clockwork.log"
+LOCK_FILE="$APP_DIR/${APP}-lock"
+PID_FILE="$APP_DIR/${APP}.pid"
+UNICORN_PID="$APP_DIR/tmp/pids/unicorn.pid"
+GEMFILE="$APP_DIR/Gemfile"
+CLOCKWORK="clockwork"
+APP_ENV="development"
+BUNDLE="bundle"
+
+START_CMD="$BUNDLE exec $CLOCKWORK ${APP_DIR}/lib/clock.rb "
+CMD="cd ${APP_DIR}; ${START_CMD} >> ${LOG_FILE} 2>&1 &"
+
+RETVAL=0
+
+
+start() {
+
+  status
+  if [ $? -eq 1 ]; then
+
+    [ `id -u` == '0' ] || (echo "$CLOCKWORK runs as root only .."; exit 5)
+    [ -d $APP_DIR ] || (echo "$APP_DIR not found!.. Exiting"; exit 6)
+    cd $APP_DIR
+    echo "Starting $CLOCKWORK message processor .. "
+
+    su -c "$CMD" - $AS_USER
+
+    RETVAL=$?
+    #Sleeping for 8 seconds for process to be precisely visible in process table - See status ()
+    sleep 8
+    [ $RETVAL -eq 0 ]
+    return $RETVAL
+  else
+    echo "$CLOCKWORK message processor is already running .. "
+  fi
+
+
+}
+
+stop() {
+    TIMEOUT=120
+    echo "Stopping $CLOCKWORK message processor .."
+    n=$TIMEOUT
+    echo 'Waiting for unicorn master to stop...'
+    while [ -s "$UNICORN_PID" ] && [ "$n" -ge 0 ]
+    do
+      sleep 1 && n=$(( $n - 1 ))
+    done
+    SIG="INT"
+    kill -$SIG `cat  $PID_FILE`
+    RETVAL=$?
+    [ $RETVAL -eq 0 ] && rm -f $LOCK_FILE
+    return $RETVAL
+}
+
+status() {
+
+  ps -ef | grep 'clockwork [0-9].[0-9].[0-9]' | grep -v grep
+  return $?
+}
+
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    status)
+        status
+
+        if [ $? -eq 0 ]; then
+             echo "$CLOCKWORK message processor is running .."
+             RETVAL=0
+         else
+             echo "$CLOCKWORK message processor is stopped .."
+             RETVAL=1
+         fi
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status}"
+        exit 0
+        ;;
+esac
+exit $RETVAL
+```
+```
+  sudo update-rc init_clockwork defaults
+```
