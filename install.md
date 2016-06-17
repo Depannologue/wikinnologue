@@ -486,9 +486,7 @@ sudo aptitude install redis-server
 ```
   sudo vi /etc/init.d init_clockwork
 ```
-```
-  sudo vi /etc/init.d init_clockwork
-```
+paste the following code and change USER_NAME by your username
 ```
 #!/bin/sh
 
@@ -502,8 +500,8 @@ sudo aptitude install redis-server
 # Description:       starts clockwork service
 ### END INIT INFO
 APP="depannologue"
-AS_USER="depanologue"
-APP_DIR="/home/depanologue/dev/${APP}"
+AS_USER="USER_NAME"
+APP_DIR="/home/USER_NAME/dev/${APP}"
 
 APP_CONFIG="${APP_DIR}/config"
 LOG_FILE="$APP_DIR/log/clockwork.log"
