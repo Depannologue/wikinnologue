@@ -334,9 +334,9 @@ cd ~/dev/depannologue
 ```
 mkdir -p tmp/{cache,data/meta_request,pids,sessions,sockets}
 ```
-create secret.yml
+create secrets.yml
 ```
-sudo vi ~/dev/depannologue/config/secret.yml
+sudo vi ~/dev/depannologue/config/secrets.yml
 ```
 paste the following code
 ```
